@@ -1,0 +1,3 @@
+django-biblentry is a standalone Django app for creating and editing
+bibliographic references. References can be exported individually or
+in bulk as TEI XML.

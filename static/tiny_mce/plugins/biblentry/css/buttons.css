@@ -1,0 +1,25 @@
+.tei-author {
+    border-bottom: 1px solid #800000;
+    background: #ffffff url(/static/tiny_mce/plugins/biblentry/img/lblAuthor.png?v=7614) no-repeat left top;
+    padding-left: 30px;
+}
+.tei-title.teia-level__m {
+    border-bottom: 1px solid #0000ff;
+    background: #ffffff url(/static/tiny_mce/plugins/biblentry/img/lblTitleMonograph.png?v=7614) no-repeat left top;
+    padding-left: 64px;
+}
+.tei-title.teia-level__a {
+    border-bottom: 1px solid #0000ff;
+    background: #ffffff url(/static/tiny_mce/plugins/biblentry/img/lblTitleArticle.png?v=7614) no-repeat left top;
+    padding-left: 43px;
+}
+.tei-editor {
+    border-bottom: 1px solid #ffa500;
+    background: #ffffff url(/static/tiny_mce/plugins/biblentry/img/lblEditor.png?v=7614) no-repeat left top;
+    padding-left: 26px;
+}
+.tei-date {
+    border-bottom: 1px solid #008000;
+    background: #ffffff url(/static/tiny_mce/plugins/biblentry/img/lblDate.png?v=7614) no-repeat left top;
+    padding-left: 21px;
+}
