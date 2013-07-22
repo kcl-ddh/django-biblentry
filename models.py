@@ -1,28 +1,31 @@
+ # -*- coding: utf-8 -*-
 from datetime import date
 import re
 from xml.etree import ElementTree
-
+import HTMLParser
+from django.utils.encoding import smart_unicode
 from django.db import models
 
 
 class BibliographicCategory (models.Model):
-    
+
     name = models.CharField(max_length=255, unique=True)
 
     class Meta:
         verbose_name_plural = 'Bibliographic categories'
-        
+
 
     def __unicode__ (self):
         return self.name
 
 
 class BibliographicEntry (models.Model):
-    
+
     styled_entry = models.TextField(blank=True)
     language = models.ForeignKey('Language', blank=True, null=True)
-    categories = models.ManyToManyField(BibliographicCategory, blank=True,
-                                        null=True)
+    categories = models.ManyToManyField(BibliographicCategory, blank=True, null=True)
+    siglum = models.CharField(blank=True, max_length=25)
+
     # The remaining fields hold content automatically generated when
     # an entry is saved.
     author = models.CharField(blank=True, max_length=255)
@@ -35,12 +38,13 @@ class BibliographicEntry (models.Model):
 
     class Meta:
         verbose_name_plural = 'Bibliographic entries'
-        
+
 
     def save (self, *args, **kwargs):
         """Generate content derived from the styled entry before
         saving."""
-        root = ElementTree.fromstring(self.styled_entry)
+        html_parser = HTMLParser.HTMLParser()
+        root = ElementTree.fromstring( html_parser.unescape(self.styled_entry).encode('utf-8') )
         self.author = self._get_author(root)
         self.title_article = self._get_title_article(root)
         self.title_monograph = self._get_title_monograph(root)
@@ -64,7 +68,7 @@ class BibliographicEntry (models.Model):
         ['Fire in the Belly']
         >>> BibliographicEntry._extract_element_content(root, 'tei-date')
         ['1997']
-        
+
         """
         # ElementTree has no XPath support, so this is a tedious
         # iterative process. However, an individual entry is small,
@@ -98,7 +102,7 @@ class BibliographicEntry (models.Model):
         >>> root = ElementTree.fromstring('<p><span class="tei-editor">Holt, Jean</span>, <span class="tei-title teia-level__m">Fire in the Belly</span>, <span class="tei-date">1997</span></p>')
         >>> BibliographicEntry._get_author(root)
         'Holt, Jean'
-        
+
         """
         authors = BibliographicEntry._extract_element_content(
             root, 'tei-author') or \
@@ -107,7 +111,7 @@ class BibliographicEntry (models.Model):
             author = authors[0]
         except IndexError:
             author = ''
-        return author        
+        return author
 
     @staticmethod
     def _get_publication_date (root):
@@ -131,7 +135,7 @@ class BibliographicEntry (models.Model):
         except IndexError:
             year = ''
         return year
-    
+
     @staticmethod
     def _get_reference_name (author, publication_date):
         """Return the reference name derived from author and
@@ -166,7 +170,7 @@ class BibliographicEntry (models.Model):
         >>> root = ElementTree.fromstring('<p><span class="tei-author">James, P. D.</span>, <span class="tei-title teia-level__a">Fire in the Belly</span>, <span class="tei-date">1997</span>, <span class="tei-title teia-level__a">The accidental appendix</span></p>')
         >>> BibliographicEntry._get_title_article(root)
         'Fire in the Belly, The accidental appendix'
-        
+
         """
         titles = BibliographicEntry._extract_element_content(
             root, 'tei-title teia-level__a')
@@ -202,7 +206,7 @@ class BibliographicEntry (models.Model):
         True
         >>> BibliographicEntry._parse_class_attribute('tei-title teia-level__m') == {'attributes': {'level': 'm'}, 'tag': 'title'}
         True
-        
+
         """
         data = {'attributes': {}}
         values = attribute.split()
@@ -213,7 +217,7 @@ class BibliographicEntry (models.Model):
                 name, subvalue = value[5:].split('__')
                 data['attributes'][name] = subvalue
         return data
-    
+
     @staticmethod
     def _render_as_tei (root):
         """Return root transformed into a TEI XML string.
@@ -221,7 +225,7 @@ class BibliographicEntry (models.Model):
         >>> root = ElementTree.fromstring('<p><span class="tei-author">James, P. D.</span>, <span class="tei-title teia-level__m">Fire in the Belly</span>, <span class="tei-date">1997</span></p>')
         >>> BibliographicEntry._render_as_tei(root)
         '<bibl><author>James, P. D.</author>, <title level="m">Fire in the Belly</title>, <date>1997</date></bibl>'
-        
+
         """
         root.tag = 'bibl'
         for element in root.iter():
@@ -235,8 +239,10 @@ class BibliographicEntry (models.Model):
         return ElementTree.tostring(root, encoding='utf-8')
 
     def __unicode__ (self):
-        name = '%s %s' % (self.title_article, self.reference_name)
-        return name.strip()
+        #name = '%s %s' % (self.title_article, self.siglum)
+        name = '%s %s' % ( smart_unicode( self.title_article), smart_unicode( self.reference_name ))
+        #name = u'%s' % (cgi.escape(self.author.encode('utf-8')))
+        return name
 
 
 class Language (models.Model):

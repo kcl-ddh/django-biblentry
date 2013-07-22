@@ -29,9 +29,9 @@ class BibliographicEntryAdmin (admin.ModelAdmin):
 
     fieldsets = (
         ('Reference', {'fields': ('styled_entry',)}),
-        ('Others', {'fields': ('language', 'categories')}),
+        ('Others', {'fields': ('language', 'categories', 'siglum')}),
         )
-    list_display = ('id', 'author', 'publication_date', 'title_monograph',
+    list_display = ('id', 'siglum', 'author', 'publication_date', 'title_monograph',
                     'title_article')
     list_display_links = list_display
     list_filter = ['language']
@@ -59,4 +59,4 @@ class LanguageAdmin (admin.ModelAdmin):
 
 admin.site.register(BibliographicCategory, BibliographicCategoryAdmin)
 admin.site.register(BibliographicEntry, BibliographicEntryAdmin)
-admin.site.register(Language, LanguageAdmin)
+admin.site.register(Language)#, LanguageAdmin)
