@@ -1,7 +1,7 @@
  # -*- coding: utf-8 -*-
 from datetime import date
 import re
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 import HTMLParser
 from django.utils.encoding import smart_unicode
 from django.db import models
